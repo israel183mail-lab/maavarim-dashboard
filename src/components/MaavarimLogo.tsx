@@ -34,6 +34,18 @@ export default function MaavarimLogo({
         <span className="font-heebo font-extrabold" style={{ color: textColor }}>
           מעברים
           <span style={{ color: "#FF3131" }}>.</span>
+          <span
+            className="inline-block"
+            style={{
+              fontFamily: "var(--font-handwriting)",
+              fontSize: "1.3em",
+              color: "#F7901E",
+              transform: "rotate(-4deg) translateY(2px)",
+              marginRight: "0.08em",
+            }}
+          >
+            נט
+          </span>
         </span>
       )}
     </span>
