@@ -60,91 +60,55 @@ export default async function HomePage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl text-slate-800">דף הבית</h1>
         <p className="text-slate-500 text-sm mt-1">שלום {session.name}, ברוכים הבאים למעברים.נט</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
-        <KpiPill label="סך פעילים" value={activeCount} />
-        <KpiPill label="סך בוגרים" value={alumniCount} />
-        <KpiPill label="תלמידים שהצלנו" value={rescuedTotal.length} />
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <section>
-            <h2 className="text-lg text-slate-800 mb-3">מדד הוצאה מסיכון</h2>
-            <div className="card p-4">
-              <RescueBarChart
-                data={creditRows.map((c) => ({ name: c.name, annual: c.rescuedAnnual, lifetime: c.rescuedLifetime }))}
-              />
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-lg text-slate-800 mb-3">צבירת קרדיטים לרכזים</h2>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {creditRows.map((c) => (
-                <div key={c.id} className="rounded-2xl border-2 border-sky-400 p-3">
-                  <div className="text-center font-bold text-slate-800 mb-2 bg-sky-50 rounded-full py-1.5">
-                    {c.name}
+      {/* צבירת קרדיטים לרכזים — row of compact cards, one per coordinator */}
+      <section>
+        <h2 className="text-lg text-slate-800 mb-3">צבירת קרדיטים לרכזים</h2>
+        <div className="flex flex-wrap gap-3">
+          {creditRows.map((c) => (
+            <div key={c.id} className="flex-1 min-w-[150px] rounded-2xl border-2 border-sky-400 p-2.5">
+              <div className="text-center text-sm font-bold text-slate-800 mb-1.5 bg-sky-50 rounded-full py-1 truncate px-2">
+                {c.name}
+              </div>
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <div className="text-center">
+                  <div className="font-heebo font-extrabold text-brand-700">
+                    {c.lifetime} <span className="text-accent-500">⭐</span>
                   </div>
-                  <div className="flex items-center justify-center gap-5 text-sm">
-                    <div className="text-center">
-                      <div className="text-xl font-heebo font-extrabold text-accent-500">⭐ {c.annual}</div>
-                      <div className="text-slate-400 text-[11px]">קרדיטים {ACADEMIC_YEAR}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xl font-heebo font-extrabold text-brand-700">⭐ {c.lifetime}</div>
-                      <div className="text-slate-400 text-[11px]">קרדיטים כללי</div>
-                    </div>
-                  </div>
+                  <div className="text-slate-400 text-[10px]">כללי</div>
                 </div>
-              ))}
+                <div className="text-center">
+                  <div className="font-heebo font-extrabold text-brand-700">
+                    {c.annual} <span className="text-accent-500">⭐</span>
+                  </div>
+                  <div className="text-slate-400 text-[10px]">{ACADEMIC_YEAR}</div>
+                </div>
+              </div>
             </div>
-          </section>
+          ))}
+        </div>
+      </section>
 
-          <MomentOfTransitionBoard
-            coordinators={coordinators.map((c) => ({ id: c.id, name: c.name }))}
-            currentUserId={session.userId}
-            canModerate={isManager(session)}
-            initialMoments={moments.map((m) => ({
-              id: m.id,
-              storyText: m.storyText,
-              status: m.status,
-              coordinatorName: m.coordinator.name,
-              createdAt: m.createdAt.toISOString(),
-            }))}
-          />
-
-          <section>
-            <h2 className="text-lg text-slate-800 mb-3">תלמודי תורה וישיבות קטנות</h2>
-            <div className="card overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 text-slate-500 text-xs">
-                  <tr>
-                    <th className="text-right p-3 font-medium">שם המוסד</th>
-                    <th className="text-right p-3 font-medium">עיר</th>
-                    <th className="text-right p-3 font-medium">רכזים פעילים במוסד</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {institutions.map((inst) => {
-                    const names = [...new Set(inst.students.map((s) => s.coordinator.name))];
-                    return (
-                      <tr key={inst.id} className="border-t border-slate-100">
-                        <td className="p-3 font-medium text-slate-700">{inst.name}</td>
-                        <td className="p-3 text-slate-500">{inst.city ?? "—"}</td>
-                        <td className="p-3 text-slate-500">{names.length ? names.join(", ") : "—"}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </section>
+      {/* Three-column row matching the deck: רגע של מעבר | פינת ההודעות | KPIs + chart */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div>
+          <KpiPill label="סך פעילים" value={activeCount} />
+          <div className="h-3" />
+          <KpiPill label="סך בוגרים" value={alumniCount} />
+          <div className="h-3" />
+          <KpiPill label="תלמידים שהצלנו" value={rescuedTotal.length} />
+          <div className="h-4" />
+          <div className="card p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">מדד הוצאה מסיכון</h3>
+            <RescueBarChart
+              data={creditRows.map((c) => ({ name: c.name, annual: c.rescuedAnnual, lifetime: c.rescuedLifetime }))}
+            />
+          </div>
         </div>
 
         <div>
@@ -171,7 +135,48 @@ export default async function HomePage() {
             ))}
           </div>
         </div>
+
+        <MomentOfTransitionBoard
+          coordinators={coordinators.map((c) => ({ id: c.id, name: c.name }))}
+          currentUserId={session.userId}
+          canModerate={isManager(session)}
+          alwaysOpen
+          initialMoments={moments.map((m) => ({
+            id: m.id,
+            storyText: m.storyText,
+            status: m.status,
+            coordinatorName: m.coordinator.name,
+            createdAt: m.createdAt.toISOString(),
+          }))}
+        />
       </div>
+
+      <section>
+        <h2 className="text-lg text-slate-800 mb-3">תלמודי תורה וישיבות קטנות</h2>
+        <div className="card overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 text-slate-500 text-xs">
+              <tr>
+                <th className="text-right p-3 font-medium">שם המוסד</th>
+                <th className="text-right p-3 font-medium">עיר</th>
+                <th className="text-right p-3 font-medium">רכזים פעילים במוסד</th>
+              </tr>
+            </thead>
+            <tbody>
+              {institutions.map((inst) => {
+                const names = [...new Set(inst.students.map((s) => s.coordinator.name))];
+                return (
+                  <tr key={inst.id} className="border-t border-slate-100">
+                    <td className="p-3 font-medium text-slate-700">{inst.name}</td>
+                    <td className="p-3 text-slate-500">{inst.city ?? "—"}</td>
+                    <td className="p-3 text-slate-500">{names.length ? names.join(", ") : "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

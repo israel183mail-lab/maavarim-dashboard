@@ -19,14 +19,16 @@ export default function MomentOfTransitionBoard({
   currentUserId,
   initialMoments,
   canModerate = false,
+  alwaysOpen = false,
 }: {
   coordinators: { id: string; name: string }[];
   currentUserId: string;
   initialMoments: Moment[];
   canModerate?: boolean;
+  alwaysOpen?: boolean;
 }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(alwaysOpen);
   const [coordinatorId, setCoordinatorId] = useState(currentUserId);
   const [storyText, setStoryText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,14 +69,16 @@ export default function MomentOfTransitionBoard({
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg text-slate-800">רגע של מעבר</h2>
-        <button onClick={() => setOpen((v) => !v)} className="btn-primary text-xs !py-1.5 !px-3">
-          {open ? "ביטול" : "+ סיפור חדש"}
-        </button>
+        <h2 className="text-lg text-slate-800">✨ רגע של מעבר</h2>
+        {!alwaysOpen && (
+          <button onClick={() => setOpen((v) => !v)} className="btn-primary text-xs !py-1.5 !px-3">
+            {open ? "ביטול" : "+ סיפור חדש"}
+          </button>
+        )}
       </div>
 
       {open && (
-        <form onSubmit={submit} className="card p-4 mb-3 space-y-3">
+        <form onSubmit={submit} className="card p-4 mb-3 space-y-3 border-2 border-accent-300">
           <div>
             <label className="block text-xs font-medium text-slate-600 mb-1">שם הרכז</label>
             <select
