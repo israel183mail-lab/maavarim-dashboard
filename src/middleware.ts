@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE } from "@/lib/auth";
 
-const PUBLIC_PATHS = ["/login", "/api/login"];
+// /api/setup/seed carries its own key-based check (see that route) and is
+// meant to be hit once, unauthenticated, right after a fresh deploy.
+const PUBLIC_PATHS = ["/login", "/api/login", "/api/setup/seed"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
