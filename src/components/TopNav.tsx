@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ROLE_LABELS } from "@/lib/format";
 import MaavarimLogo from "@/components/MaavarimLogo";
+import ShlavimLogo from "@/components/ShlavimLogo";
 
 type NavItem = { href: string; label: string };
 
@@ -38,8 +39,14 @@ export default function TopNav({
   }
 
   return (
-    <header className="bg-brand-700 text-white sticky top-0 z-20 shadow-md">
-      <div className="max-w-[1400px] mx-auto px-4 flex items-center h-[72px] gap-4">
+    <header className="sticky top-0 z-20 shadow-md">
+      <div className="bg-white border-b border-slate-100 py-1.5">
+        <div className="max-w-[1400px] mx-auto px-4 flex justify-end">
+          <ShlavimLogo className="text-2xl" />
+        </div>
+      </div>
+      <div className="bg-brand-700 text-white">
+        <div className="max-w-[1400px] mx-auto px-4 flex items-center h-[72px] gap-4">
         <Link href="/home" className="flex items-center shrink-0 text-2xl">
           <MaavarimLogo light />
         </Link>
@@ -66,6 +73,7 @@ export default function TopNav({
           >
             התנתקות
           </button>
+        </div>
         </div>
       </div>
     </header>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MaavarimLogo from "@/components/MaavarimLogo";
+import ShlavimLogo from "@/components/ShlavimLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,6 +36,10 @@ export default function LoginPage() {
       className="relative min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
       style={{ backgroundImage: "url(/login-bg.jpg)" }}
     >
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm">
+        <ShlavimLogo className="text-xl" />
+      </div>
+
       <div className="w-full max-w-md flex flex-col items-center">
         <div className="text-4xl sm:text-5xl mb-10">
           <MaavarimLogo />
