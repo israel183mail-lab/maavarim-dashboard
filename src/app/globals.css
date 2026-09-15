@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Heebo:wght@700;800&family=Rubik+Scribble&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Heebo:wght@700;800&family=Gveret+Levin&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,11 +7,7 @@
 :root {
   --font-heebo: "Heebo", "Segoe UI", Arial, sans-serif;
   --font-assistant: "Assistant", "Segoe UI", Arial, sans-serif;
-  /* Rubik Scribble is one of the few Google Fonts with real Hebrew glyph
-     coverage in a hand-drawn style — verified directly, since most
-     "handwriting" web fonts silently fall back to a plain serif for
-     Hebrew text. */
-  --font-handwriting: "Rubik Scribble", cursive;
+  --font-handwriting: "Gveret Levin", cursive;
 }
 
 html,

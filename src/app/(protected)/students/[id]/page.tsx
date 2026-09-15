@@ -7,7 +7,8 @@ import { CATEGORY_LABELS, RISK_MULTIPLIER, STUDENT_STATUS_LABELS } from "@/lib/f
 import { taskProgressPercent, successScore } from "@/lib/progress";
 import RiskBadge from "@/components/RiskBadge";
 import ProgressBattery from "@/components/ProgressBattery";
-import StudentSuccessChart from "@/components/StudentSuccessChart";
+import BatteryTrendChart from "@/components/BatteryTrendChart";
+import RedirectPyramid from "@/components/RedirectPyramid";
 import StudentTaskChecklist from "@/components/StudentTaskChecklist";
 import StudentNotesTimeline from "@/components/StudentNotesTimeline";
 import StudentEditPanel from "@/components/StudentEditPanel";
@@ -45,7 +46,20 @@ export default async function StudentCardPage({ params }: { params: Promise<{ id
   const redirectTasks = student.tasks.filter((t) => t.template.axisType === "REDIRECT");
 
   const progressPercent = taskProgressPercent(individualTasks);
+  const riskMultiplier = RISK_MULTIPLIER[student.riskLevel] ?? 1;
   const score = successScore(progressPercent, student.riskLevel);
+
+  const orderedTasks = [...individualTasks].sort((a, b) => a.template.order - b.template.order);
+  let cumulative = 0;
+  const trendPoints = [
+    { label: "התחלה", score: 0 },
+    ...orderedTasks.map((t) => {
+      if (t.status === "COMPLETED") cumulative += t.template.weight;
+      return { label: t.template.title, score: Math.round(cumulative * riskMultiplier * 10) / 10 };
+    }),
+  ];
+
+  const isAlumniPhase = student.category === "ALUMNI_2" || student.category === "ALUMNI_3";
 
   return (
     <div className="space-y-6">
@@ -64,30 +78,41 @@ export default async function StudentCardPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
+      <StudentEditPanel
+        studentId={student.id}
+        institutions={institutions.map((i) => ({ id: i.id, name: i.name }))}
+        initial={{
+          firstName: student.firstName,
+          lastName: student.lastName,
+          city: student.city ?? "",
+          address: student.address ?? "",
+          phone: student.phone ?? "",
+          parentPhone: student.parentPhone ?? "",
+          familyStatusNotes: student.familyStatusNotes,
+          currentInstitutionId: student.currentInstitutionId ?? "",
+          status: student.status,
+          riskLevel: student.riskLevel,
+        }}
+      />
+
       {atRisk && (
         <div className="rounded-lg bg-[#FF3131]/5 border border-[#FF3131]/30 px-4 py-3 text-sm text-[#c40000]">
-          התלמיד במצב סיכון — הועבר אוטומטית למסלול "הכוון" בתחתית העמוד. ציון ההצלחה מוכפל ב-{Math.round(RISK_MULTIPLIER[student.riskLevel] * 100)}%.
+          התלמיד במצב סיכון — הועבר אוטומטית למסלול &quot;הכוון&quot; בתחתית העמוד. ציון ההצלחה מוכפל ב-{Math.round(riskMultiplier * 100)}%.
         </div>
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <StudentEditPanel
-            studentId={student.id}
-            institutions={institutions.map((i) => ({ id: i.id, name: i.name }))}
-            initial={{
-              firstName: student.firstName,
-              lastName: student.lastName,
-              city: student.city ?? "",
-              address: student.address ?? "",
-              phone: student.phone ?? "",
-              parentPhone: student.parentPhone ?? "",
-              familyStatusNotes: student.familyStatusNotes,
-              currentInstitutionId: student.currentInstitutionId ?? "",
-              status: student.status,
-              riskLevel: student.riskLevel,
-            }}
-          />
+          <div className="card p-4">
+            <div className="text-center mb-1">
+              <span className="text-2xl font-heebo font-extrabold text-brand-700">{score}%</span>
+              <span className="text-xs text-slate-400"> מדד הצלחה</span>
+            </div>
+            <BatteryTrendChart
+              points={trendPoints}
+              label={isAlumniPhase ? "בוגר" : "משתתף"}
+            />
+          </div>
           <div className="card p-4">
             <StudentNotesTimeline
               studentId={student.id}
@@ -103,22 +128,6 @@ export default async function StudentCardPage({ params }: { params: Promise<{ id
 
         <div className="lg:col-span-2 space-y-6">
           <div className="card p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-slate-700 text-sm">מדד הצלחה — {CATEGORY_LABELS[student.category]}</h3>
-              <span className="text-lg font-heebo font-extrabold text-brand-700">{score}%</span>
-            </div>
-            <StudentSuccessChart
-              tasks={individualTasks.map((t) => ({
-                status: t.status,
-                notes: t.notes,
-                completedAt: t.completedAt?.toISOString() ?? null,
-                template: { title: t.template.title, weight: t.template.weight, order: t.template.order },
-              }))}
-              riskMultiplier={RISK_MULTIPLIER[student.riskLevel] ?? 1}
-            />
-          </div>
-
-          <div className="card p-4">
             <StudentTaskChecklist
               studentId={student.id}
               title={`רשימת משימות — ${CATEGORY_LABELS[student.category]}`}
@@ -132,10 +141,16 @@ export default async function StudentCardPage({ params }: { params: Promise<{ id
           </div>
 
           {atRisk && redirectTasks.length > 0 && (
-            <div className="card p-4 border-[#FF3131]/30">
+            <div className="card p-4 border-[#FF3131]/30 grid sm:grid-cols-2 gap-4">
+              <RedirectPyramid
+                category={CATEGORY_LABELS[student.category]}
+                steps={[...redirectTasks]
+                  .sort((a, b) => a.template.order - b.template.order)
+                  .map((t) => ({ title: t.template.title, status: t.status }))}
+              />
               <StudentTaskChecklist
                 studentId={student.id}
-                title="מסלול הכוון"
+                title="רשימת שלבי ההכוון"
                 tasks={redirectTasks.map((t) => ({
                   id: t.id,
                   status: t.status,

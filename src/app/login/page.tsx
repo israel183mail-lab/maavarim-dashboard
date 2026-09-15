@@ -31,43 +31,40 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-brand-500 via-brand-700 to-brand-900 flex flex-col">
-      {/* decorative orange tabs, echoing the deck's login screens */}
-      <div className="absolute -bottom-6 right-10 h-16 w-10 rounded-t-full bg-accent-500/90" />
-      <div className="absolute -bottom-6 right-24 h-20 w-10 rounded-t-full bg-accent-500/70" />
-
-      <div className="flex items-center justify-between px-6 sm:px-10 pt-8">
-        <h1 className="text-xl sm:text-2xl font-heebo font-extrabold text-white">כניסה למערכת</h1>
-        <div className="text-2xl">
-          <MaavarimLogo light />
+    <div
+      className="relative min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
+      style={{ backgroundImage: "url(/login-bg.jpg)" }}
+    >
+      <div className="w-full max-w-md flex flex-col items-center">
+        <div className="text-4xl sm:text-5xl mb-10">
+          <MaavarimLogo />
         </div>
-      </div>
 
-      <div className="flex-1 flex items-center justify-center px-4">
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5">
-          <div className="flex items-center gap-3">
-            <span className="text-white/80 text-sm w-24 shrink-0 text-left">דוא&quot;ל</span>
-            <div className="relative flex-1">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-full bg-white/95 px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-accent-400"
-                placeholder="name@maavarim.org.il"
-                dir="ltr"
-              />
-            </div>
+        <form
+          onSubmit={handleSubmit}
+          className="w-full space-y-4 bg-white/85 backdrop-blur-sm rounded-3xl p-6 shadow-xl"
+        >
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">דוא&quot;ל</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-full bg-white px-4 py-3 text-sm text-slate-800 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-accent-400"
+              placeholder="name@maavarim.org.il"
+              dir="ltr"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-white/80 text-sm w-24 shrink-0 text-left">סיסמה</span>
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1">סיסמה</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex-1 rounded-full bg-white/95 px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-accent-400"
+              className="w-full rounded-full bg-white px-4 py-3 text-sm text-slate-800 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-accent-400"
               placeholder="••••••••"
               dir="ltr"
             />
@@ -83,12 +80,11 @@ export default function LoginPage() {
             {loading ? "מתחבר..." : "התחברות"}
           </button>
 
-          <p className="text-xs text-white/60 text-center pt-2">
+          <p className="text-xs text-slate-500 text-center pt-1">
             גישה לצוות התכנית בלבד. לבעיות התחברות יש לפנות למנהל המערכת.
           </p>
         </form>
       </div>
-      <div className="h-16" />
     </div>
   );
 }

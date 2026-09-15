@@ -6,15 +6,35 @@ import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/format";
 
 type Institution = { id: string; name: string };
 
-type Row = { firstName: string; lastName: string; category: string; currentInstitutionId: string };
+type Row = {
+  currentInstitutionId: string;
+  lastName: string;
+  firstName: string;
+  city: string;
+  address: string;
+  phone: string;
+  familyStatusNotes: string;
+  category: string;
+};
 
 function emptyRow(): Row {
-  return { firstName: "", lastName: "", category: "GRADE_8", currentInstitutionId: "" };
+  return { currentInstitutionId: "", lastName: "", firstName: "", city: "", address: "", phone: "", familyStatusNotes: "", category: "GRADE_8" };
 }
+
+const COLUMNS: { key: keyof Row; label: string }[] = [
+  { key: "currentInstitutionId", label: "שם המוסד" },
+  { key: "lastName", label: "שם משפחה" },
+  { key: "firstName", label: "שם פרטי" },
+  { key: "city", label: "עיר" },
+  { key: "address", label: "כתובת" },
+  { key: "phone", label: "טלפון" },
+  { key: "familyStatusNotes", label: "מצב משפחתי" },
+  { key: "category", label: "קטגוריה" },
+];
 
 export default function BulkRegisterForm({ institutions }: { institutions: Institution[] }) {
   const router = useRouter();
-  const [rows, setRows] = useState<Row[]>([emptyRow(), emptyRow(), emptyRow()]);
+  const [rows, setRows] = useState<Row[]>(Array.from({ length: 8 }, emptyRow));
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +57,10 @@ export default function BulkRegisterForm({ institutions }: { institutions: Insti
           firstName: row.firstName.trim(),
           lastName: row.lastName.trim(),
           category: row.category,
+          city: row.city || undefined,
+          address: row.address || undefined,
+          phone: row.phone || undefined,
+          familyStatusNotes: row.familyStatusNotes || undefined,
           currentInstitutionId: row.currentInstitutionId || undefined,
         }),
       });
@@ -45,7 +69,7 @@ export default function BulkRegisterForm({ institutions }: { institutions: Insti
     setLoading(false);
     setDone(count);
     if (count > 0) {
-      setRows([emptyRow(), emptyRow(), emptyRow()]);
+      setRows(Array.from({ length: 8 }, emptyRow));
       router.refresh();
     } else {
       setError("לא נוספו תלמידים — נא למלא שם פרטי ושם משפחה בשורה אחת לפחות.");
@@ -54,40 +78,57 @@ export default function BulkRegisterForm({ institutions }: { institutions: Insti
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-xs">
+      <div className="border-2 border-slate-300 overflow-x-auto bg-white">
+        <table className="w-full text-sm border-collapse">
+          <thead>
             <tr>
-              <th className="text-right p-2 font-medium">שם פרטי</th>
-              <th className="text-right p-2 font-medium">שם משפחה</th>
-              <th className="text-right p-2 font-medium">קטגוריה</th>
-              <th className="text-right p-2 font-medium">מוסד</th>
+              {COLUMNS.map((col) => (
+                <th key={col.key} className="text-right p-2 font-bold text-accent-600 border border-slate-300 bg-slate-50 whitespace-nowrap">
+                  {col.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((row, i) => (
-              <tr key={i} className="border-t border-slate-100">
-                <td className="p-2">
-                  <input className="input" value={row.firstName} onChange={(e) => updateRow(i, { firstName: e.target.value })} />
-                </td>
-                <td className="p-2">
-                  <input className="input" value={row.lastName} onChange={(e) => updateRow(i, { lastName: e.target.value })} />
-                </td>
-                <td className="p-2">
-                  <select className="input" value={row.category} onChange={(e) => updateRow(i, { category: e.target.value })}>
-                    {CATEGORY_ORDER.map((c) => (
-                      <option key={c} value={c}>
-                        {CATEGORY_LABELS[c]}
+              <tr key={i}>
+                <td className="border border-slate-200 p-0">
+                  <select
+                    className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400"
+                    value={row.currentInstitutionId}
+                    onChange={(e) => updateRow(i, { currentInstitutionId: e.target.value })}
+                  >
+                    <option value=""></option>
+                    {institutions.map((inst) => (
+                      <option key={inst.id} value={inst.id}>
+                        {inst.name}
                       </option>
                     ))}
                   </select>
                 </td>
-                <td className="p-2">
-                  <select className="input" value={row.currentInstitutionId} onChange={(e) => updateRow(i, { currentInstitutionId: e.target.value })}>
-                    <option value="">ללא</option>
-                    {institutions.map((inst) => (
-                      <option key={inst.id} value={inst.id}>
-                        {inst.name}
+                <td className="border border-slate-200 p-0">
+                  <input className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.lastName} onChange={(e) => updateRow(i, { lastName: e.target.value })} />
+                </td>
+                <td className="border border-slate-200 p-0">
+                  <input className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.firstName} onChange={(e) => updateRow(i, { firstName: e.target.value })} />
+                </td>
+                <td className="border border-slate-200 p-0">
+                  <input className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.city} onChange={(e) => updateRow(i, { city: e.target.value })} />
+                </td>
+                <td className="border border-slate-200 p-0">
+                  <input className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.address} onChange={(e) => updateRow(i, { address: e.target.value })} />
+                </td>
+                <td className="border border-slate-200 p-0">
+                  <input dir="ltr" className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.phone} onChange={(e) => updateRow(i, { phone: e.target.value })} />
+                </td>
+                <td className="border border-slate-200 p-0">
+                  <input className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.familyStatusNotes} onChange={(e) => updateRow(i, { familyStatusNotes: e.target.value })} />
+                </td>
+                <td className="border border-slate-200 p-0">
+                  <select className="w-full h-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-1 focus:ring-accent-400" value={row.category} onChange={(e) => updateRow(i, { category: e.target.value })}>
+                    {CATEGORY_ORDER.map((c) => (
+                      <option key={c} value={c}>
+                        {CATEGORY_LABELS[c]}
                       </option>
                     ))}
                   </select>

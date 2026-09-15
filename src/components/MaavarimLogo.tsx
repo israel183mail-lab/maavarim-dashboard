@@ -38,10 +38,10 @@ export default function MaavarimLogo({
             className="inline-block"
             style={{
               fontFamily: "var(--font-handwriting)",
-              fontSize: "1.3em",
-              color: "#F7901E",
-              transform: "rotate(-4deg) translateY(2px)",
-              marginRight: "0.08em",
+              fontWeight: 400,
+              fontSize: "1.5em",
+              color: textColor,
+              marginRight: "0.05em",
             }}
           >
             נט

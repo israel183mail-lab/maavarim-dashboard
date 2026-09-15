@@ -99,55 +99,74 @@ export default function StudentDataGrid({
       </div>
 
       <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-xs">
+        <table className="w-full text-sm border-collapse">
+          <thead className="bg-brand-50 text-brand-800 text-xs">
             <tr>
-              <th className="text-right p-3 font-medium cursor-pointer select-none" onClick={() => toggleSort("name")}>
+              <th className="text-right p-2.5 font-semibold border border-slate-200">⚠</th>
+              <th
+                className="text-right p-2.5 font-semibold border border-slate-200 cursor-pointer select-none"
+                onClick={() => toggleSort("name")}
+              >
                 שם משפחה / שם פרטי
               </th>
-              {showCoordinatorColumn && <th className="text-right p-3 font-medium">רכז אחראי</th>}
-              <th className="text-right p-3 font-medium cursor-pointer select-none" onClick={() => toggleSort("institution")}>
+              {showCoordinatorColumn && <th className="text-right p-2.5 font-semibold border border-slate-200">רכז אחראי</th>}
+              <th
+                className="text-right p-2.5 font-semibold border border-slate-200 cursor-pointer select-none"
+                onClick={() => toggleSort("institution")}
+              >
                 מוסד
               </th>
-              <th className="text-right p-3 font-medium cursor-pointer select-none" onClick={() => toggleSort("category")}>
+              <th
+                className="text-right p-2.5 font-semibold border border-slate-200 cursor-pointer select-none"
+                onClick={() => toggleSort("category")}
+              >
                 קטגוריה
               </th>
-              <th className="text-right p-3 font-medium">אינטראקציה אחרונה</th>
-              <th className="text-right p-3 font-medium cursor-pointer select-none" onClick={() => toggleSort("progress")}>
+              <th className="text-right p-2.5 font-semibold border border-slate-200">אינטראקציה אחרונה</th>
+              <th
+                className="text-right p-2.5 font-semibold border border-slate-200 cursor-pointer select-none"
+                onClick={() => toggleSort("progress")}
+              >
                 מצב התקדמות
               </th>
-              <th className="text-right p-3 font-medium cursor-pointer select-none" onClick={() => toggleSort("risk")}>
+              <th
+                className="text-right p-2.5 font-semibold border border-slate-200 cursor-pointer select-none"
+                onClick={() => toggleSort("risk")}
+              >
                 רמת סיכון
               </th>
-              <th className="text-right p-3 font-medium"></th>
+              <th className="text-right p-2.5 font-semibold border border-slate-200">הפניה</th>
             </tr>
           </thead>
           <tbody>
             {sorted.map((s) => (
-              <tr key={s.id} className="border-t border-slate-100 hover:bg-slate-50/60">
-                <td className="p-3 font-medium text-slate-700">
+              <tr key={s.id} className="hover:bg-slate-50/60">
+                <td className="p-2.5 border border-slate-200 text-center">
+                  {(s.riskLevel === "ELEVATED" || s.riskLevel === "CRITICAL") && <span title="בסיכון">⚠️</span>}
+                </td>
+                <td className="p-2.5 border border-slate-200 font-medium text-slate-700">
                   {s.lastName} {s.firstName}
                 </td>
-                {showCoordinatorColumn && <td className="p-3 text-slate-500">{s.coordinator.name}</td>}
-                <td className="p-3 text-slate-500">{s.currentInstitution?.name ?? "—"}</td>
-                <td className="p-3 text-slate-500">{CATEGORY_LABELS[s.category]}</td>
-                <td className="p-3 text-slate-500">{s.notes[0]?.note?.slice(0, 30) || "—"}</td>
-                <td className="p-3">
+                {showCoordinatorColumn && <td className="p-2.5 border border-slate-200 text-slate-500">{s.coordinator.name}</td>}
+                <td className="p-2.5 border border-slate-200 text-slate-500">{s.currentInstitution?.name ?? "—"}</td>
+                <td className="p-2.5 border border-slate-200 text-slate-500">{CATEGORY_LABELS[s.category]}</td>
+                <td className="p-2.5 border border-slate-200 text-slate-500">{s.notes[0]?.note?.slice(0, 30) || "—"}</td>
+                <td className="p-2.5 border border-slate-200">
                   <ProgressBattery percent={taskProgressPercent(s.tasks)} compact />
                 </td>
-                <td className="p-3">
+                <td className="p-2.5 border border-slate-200">
                   <RiskBadge level={s.riskLevel} />
                 </td>
-                <td className="p-3">
-                  <Link href={`/students/${s.id}`} className="text-brand-600 text-xs font-semibold hover:underline">
-                    כרטיס תלמיד ←
+                <td className="p-2.5 border border-slate-200 text-center">
+                  <Link href={`/students/${s.id}`} className="text-brand-600 hover:underline" title="כרטיס תלמיד">
+                    🔗
                   </Link>
                 </td>
               </tr>
             ))}
             {students !== null && sorted.length === 0 && (
               <tr>
-                <td colSpan={8} className="p-6 text-center text-slate-400">
+                <td colSpan={9} className="p-6 text-center text-slate-400 border border-slate-200">
                   לא נמצאו תלמידים
                 </td>
               </tr>

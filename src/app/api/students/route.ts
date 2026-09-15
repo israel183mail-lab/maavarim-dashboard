@@ -46,13 +46,15 @@ export async function POST(req: NextRequest) {
     lastName?: string;
     category?: string;
     city?: string;
+    address?: string;
     phone?: string;
     parentPhone?: string;
+    familyStatusNotes?: string;
     currentInstitutionId?: string;
     coordinatorId?: string;
   }>(req);
   if (!body) return NextResponse.json({ error: "בקשה לא תקינה" }, { status: 400 });
-  const { firstName, lastName, category, city, phone, parentPhone, currentInstitutionId, coordinatorId } = body;
+  const { firstName, lastName, category, city, address, phone, parentPhone, familyStatusNotes, currentInstitutionId, coordinatorId } = body;
 
   if (!firstName || !lastName || !category) {
     return NextResponse.json({ error: "נא למלא שם פרטי, שם משפחה וקטגוריה" }, { status: 400 });
@@ -66,8 +68,10 @@ export async function POST(req: NextRequest) {
       lastName,
       category: category as StudentCategory,
       city: city || null,
+      address: address || null,
       phone: phone || null,
       parentPhone: parentPhone || null,
+      familyStatusNotes: familyStatusNotes || "",
       currentInstitutionId: currentInstitutionId || null,
       coordinatorId: assignedCoordinatorId,
     },

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { RISK_LABELS, RISK_ORDER } from "@/lib/format";
+import { RISK_DOT_COLOR, RISK_LABELS, RISK_ORDER } from "@/lib/format";
 
 type Institution = { id: string; name: string };
 
@@ -28,7 +28,7 @@ export default function StudentEditPanel({
 }) {
   const router = useRouter();
   const [form, setForm] = useState(initial);
-  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function save(patch: Record<string, unknown>) {
@@ -45,98 +45,90 @@ export default function StudentEditPanel({
   async function saveAll(e: React.FormEvent) {
     e.preventDefault();
     await save(form);
-    setEditing(false);
   }
 
   return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-slate-700 text-sm">פרטים אישיים</h3>
-        <div className="flex items-center gap-2">
+    <div className="rounded-2xl overflow-hidden border-2 border-accent-500">
+      <div className="bg-accent-500 flex items-center justify-between px-4 py-2.5 flex-wrap gap-3">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="bg-brand-700 text-white text-sm font-bold px-4 py-1.5 rounded-full"
+        >
+          פרטים אישיים {open ? "▲" : "▼"}
+        </button>
+
+        <div className="flex items-center gap-2 text-white text-sm font-bold">
+          מצב סיכון
+          <span className={`h-4 w-4 rounded-full ring-2 ring-white/50 ${RISK_DOT_COLOR[form.riskLevel] ?? "bg-slate-400"}`} />
+        </div>
+
+        <div className="flex rounded-full overflow-hidden border-2 border-white text-xs font-bold">
           <button
-            onClick={() => save({ status: form.status === "ACTIVE" ? "INACTIVE" : "ACTIVE" })}
-            disabled={loading}
-            className={`text-xs px-3 py-1 rounded-full font-semibold ${
-              form.status === "ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"
-            }`}
+            onClick={() => {
+              setForm((f) => ({ ...f, status: "ACTIVE" }));
+              save({ status: "ACTIVE" });
+            }}
+            className={`px-3 py-1.5 transition ${form.status === "ACTIVE" ? "bg-brand-700 text-white" : "text-white/80"}`}
           >
-            {form.status === "ACTIVE" ? "פעיל" : "לא פעיל"}
+            פעיל
           </button>
-          <button onClick={() => setEditing((v) => !v)} className="text-xs text-brand-600 hover:underline">
-            {editing ? "ביטול" : "עריכה"}
+          <button
+            onClick={() => {
+              setForm((f) => ({ ...f, status: "INACTIVE" }));
+              save({ status: "INACTIVE" });
+            }}
+            className={`px-3 py-1.5 transition ${form.status === "INACTIVE" ? "bg-white text-accent-600" : "text-white/80"}`}
+          >
+            לא פעיל
           </button>
         </div>
       </div>
 
-      <div className="mb-3">
-        <label className="block text-xs font-medium text-slate-500 mb-1">מצב סיכון</label>
-        <div className="flex gap-1.5 flex-wrap">
-          {RISK_ORDER.map((r) => (
-            <button
-              key={r}
-              onClick={() => {
-                setForm((f) => ({ ...f, riskLevel: r }));
-                save({ riskLevel: r });
-              }}
-              className={`text-xs px-2.5 py-1 rounded-full border font-medium transition ${
-                form.riskLevel === r ? "border-brand-600 bg-brand-600 text-white" : "border-slate-200 text-slate-500 hover:border-slate-400"
-              }`}
-            >
-              {RISK_LABELS[r]}
-            </button>
-          ))}
-        </div>
-      </div>
+      {open && (
+        <form onSubmit={saveAll} className="p-4 bg-white space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">מצב סיכון</label>
+            <div className="flex gap-1.5 flex-wrap">
+              {RISK_ORDER.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => {
+                    setForm((f) => ({ ...f, riskLevel: r }));
+                    save({ riskLevel: r });
+                  }}
+                  className={`text-xs px-2.5 py-1 rounded-full border font-medium transition ${
+                    form.riskLevel === r ? "border-brand-600 bg-brand-600 text-white" : "border-slate-200 text-slate-500 hover:border-slate-400"
+                  }`}
+                >
+                  {RISK_LABELS[r]}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {!editing ? (
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-          <div>
-            <dt className="text-xs text-slate-400">עיר מגורים</dt>
-            <dd className="text-slate-700">{form.city || "—"}</dd>
+          <div className="grid grid-cols-2 gap-3">
+            <input className="input" placeholder="עיר מגורים" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+            <input className="input" placeholder="רחוב" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            <input className="input" dir="ltr" placeholder="טלפון" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <input className="input" dir="ltr" placeholder="טלפון הורים" value={form.parentPhone} onChange={(e) => setForm({ ...form, parentPhone: e.target.value })} />
+            <select className="input col-span-2" value={form.currentInstitutionId} onChange={(e) => setForm({ ...form, currentInstitutionId: e.target.value })}>
+              <option value="">ללא מוסד (ישיבה)</option>
+              {institutions.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name}
+                </option>
+              ))}
+            </select>
+            <textarea
+              className="input col-span-2"
+              placeholder="מצב משפחתי"
+              value={form.familyStatusNotes}
+              onChange={(e) => setForm({ ...form, familyStatusNotes: e.target.value })}
+            />
           </div>
-          <div>
-            <dt className="text-xs text-slate-400">רחוב</dt>
-            <dd className="text-slate-700">{form.address || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-slate-400">טלפון</dt>
-            <dd className="text-slate-700" dir="ltr">{form.phone || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-slate-400">טלפון הורים</dt>
-            <dd className="text-slate-700" dir="ltr">{form.parentPhone || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-slate-400">ישיבה / מוסד</dt>
-            <dd className="text-slate-700">{institutions.find((i) => i.id === form.currentInstitutionId)?.name || "—"}</dd>
-          </div>
-          <div className="col-span-2">
-            <dt className="text-xs text-slate-400">מצב משפחתי</dt>
-            <dd className="text-slate-700">{form.familyStatusNotes || "—"}</dd>
-          </div>
-        </dl>
-      ) : (
-        <form onSubmit={saveAll} className="grid grid-cols-2 gap-3">
-          <input className="input" placeholder="עיר מגורים" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-          <input className="input" placeholder="רחוב" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-          <input className="input" dir="ltr" placeholder="טלפון" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-          <input className="input" dir="ltr" placeholder="טלפון הורים" value={form.parentPhone} onChange={(e) => setForm({ ...form, parentPhone: e.target.value })} />
-          <select className="input col-span-2" value={form.currentInstitutionId} onChange={(e) => setForm({ ...form, currentInstitutionId: e.target.value })}>
-            <option value="">ללא מוסד</option>
-            {institutions.map((i) => (
-              <option key={i.id} value={i.id}>
-                {i.name}
-              </option>
-            ))}
-          </select>
-          <textarea
-            className="input col-span-2"
-            placeholder="מצב משפחתי"
-            value={form.familyStatusNotes}
-            onChange={(e) => setForm({ ...form, familyStatusNotes: e.target.value })}
-          />
-          <button type="submit" disabled={loading} className="btn-primary col-span-2">
-            {loading ? "שומר..." : "שמירה"}
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? "שומר..." : "שמירת פרטים"}
           </button>
         </form>
       )}
