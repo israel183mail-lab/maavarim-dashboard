@@ -1,0 +1,296 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// COORDINATOR (רכז) runs a caseload of students day to day. MANAGER (מנהל
+// תוכנית) sees and manages everything across coordinators. SUPER_ADMIN
+// additionally manages user accounts and system-wide announcements.
+enum Role {
+  COORDINATOR
+  MANAGER
+  SUPER_ADMIN
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(COORDINATOR)
+  phone        String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+
+  students            Student[]            @relation("StudentCoordinator")
+  studentNotes        StudentNote[]
+  groupTasks          GroupTask[]          @relation("GroupTaskCoordinator")
+  momentsOfTransition MomentOfTransition[]
+  announcements       Announcement[]
+  approvedTransfers   StudentTransfer[]    @relation("TransferApprover")
+  approvedMoments     MomentOfTransition[] @relation("MomentApprover")
+  riskChanges         RiskChange[]
+}
+
+enum InstitutionType {
+  TALMUD_TORAH  // ת"ת
+  YESHIVA_KTANA // ישיבה קטנה
+  OTHER
+}
+
+model Institution {
+  id            String          @id @default(cuid())
+  name          String
+  type          InstitutionType @default(YESHIVA_KTANA)
+  city          String?
+  address       String?
+  principalName String?
+  contactPhone  String?
+  contactEmail  String?
+  websiteUrl    String?
+  info          String          @default("") // סגנון, מידע נוסף
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+
+  students      Student[]
+  transfersFrom StudentTransfer[] @relation("TransferFrom")
+  transfersTo   StudentTransfer[] @relation("TransferTo")
+  groupTasks    GroupTask[]
+}
+
+// Where a student sits on the מעברים journey. GRADE_8 and YESHIVA_1 are
+// "משתתף" (active participant); ALUMNI_2/ALUMNI_3 are "בוגר" (graduate,
+// lighter-touch follow-up). Each has its own individual-axis task checklist.
+enum StudentCategory {
+  GRADE_8   // משתתף כיתה ח'
+  YESHIVA_1 // משתתף שיעור א'
+  ALUMNI_2  // בוגר שיעור ב'
+  ALUMNI_3  // בוגר שיעור ג'
+}
+
+enum RiskLevel {
+  NORMAL     // תקין - ירוק
+  IN_REVIEW  // בבדיקה - צהוב
+  ELEVATED   // מוגבר - כתום
+  CRITICAL   // קריטי - אדום
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  DROPPED
+}
+
+model Student {
+  id                String  @id @default(cuid())
+  internalCode      String? @unique
+  firstName         String
+  lastName          String
+  birthDate         DateTime?
+  city              String?
+  address           String?
+  phone             String?
+  parentPhone       String?
+  familyStatusNotes String  @default("")
+
+  currentInstitution   Institution? @relation(fields: [currentInstitutionId], references: [id])
+  currentInstitutionId String?
+
+  coordinator   User   @relation("StudentCoordinator", fields: [coordinatorId], references: [id])
+  coordinatorId String
+
+  category  StudentCategory @default(GRADE_8)
+  riskLevel RiskLevel       @default(NORMAL)
+  status    StudentStatus   @default(ACTIVE)
+
+  joinDate   DateTime  @default(now())
+  exitDate   DateTime?
+  exitReason String?
+
+  tasks       StudentTask[]
+  notes       StudentNote[]
+  transfers   StudentTransfer[]
+  riskChanges RiskChange[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([coordinatorId])
+  @@index([riskLevel])
+  @@index([category])
+}
+
+// One row per risk-level change on a student — lets the home page compute
+// "students rescued from risk" (moved from yellow/orange/red back to
+// green) per coordinator, which a snapshot of the current level alone
+// can't answer.
+model RiskChange {
+  id            String    @id @default(cuid())
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId     String
+  previousRisk  RiskLevel
+  newRisk       RiskLevel
+  changedBy     User?     @relation(fields: [changedById], references: [id])
+  changedById   String?
+  reason        String?
+  createdAt     DateTime  @default(now())
+
+  @@index([studentId])
+  @@index([createdAt])
+}
+
+model StudentTransfer {
+  id                String       @id @default(cuid())
+  student           Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId         String
+  fromInstitution   Institution? @relation("TransferFrom", fields: [fromInstitutionId], references: [id])
+  fromInstitutionId String?
+  toInstitution     Institution  @relation("TransferTo", fields: [toInstitutionId], references: [id])
+  toInstitutionId   String
+  transferDate      DateTime     @default(now())
+  reason            String       @default("")
+  approvedBy        User?        @relation("TransferApprover", fields: [approvedById], references: [id])
+  approvedById      String?
+  createdAt         DateTime     @default(now())
+
+  @@index([studentId])
+}
+
+enum AxisType {
+  GROUP      // ציר הקבוצה
+  INDIVIDUAL // ציר הפרט
+  REDIRECT   // מסלול הכוון (student at risk)
+}
+
+// The fixed checklist of steps per category/axis, with the progress weight
+// each step contributes once completed — this is what drives the "battery"
+// progress meter on a student's card. Static reference data, seeded once;
+// not meant to change per academic year.
+model TaskTemplate {
+  id          String           @id @default(cuid())
+  title       String
+  axisType    AxisType
+  category    StudentCategory? // null for GROUP templates (apply to everyone)
+  targetMonth String?          // Hebrew month label for GROUP axis scheduling
+  weight      Float            @default(0)
+  order       Int              @default(0)
+  isMandatory Boolean          @default(true)
+
+  studentTasks StudentTask[]
+  groupTasks   GroupTask[]
+
+  @@index([axisType])
+  @@index([category])
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+  DELAYED
+  SKIPPED
+}
+
+// One student's instance of an individual/redirect TaskTemplate for a given
+// academic year.
+model StudentTask {
+  id           String       @id @default(cuid())
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  template     TaskTemplate @relation(fields: [templateId], references: [id])
+  templateId   String
+  academicYear String
+  status       TaskStatus   @default(PENDING)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  notes        String       @default("")
+  skipReason   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, templateId, academicYear])
+  @@index([studentId])
+  @@index([status])
+}
+
+// One institution/coordinator's instance of a GROUP TaskTemplate for a
+// given academic year — drives ציר הקבוצה.
+model GroupTask {
+  id             String       @id @default(cuid())
+  institution    Institution  @relation(fields: [institutionId], references: [id])
+  institutionId  String
+  template       TaskTemplate @relation(fields: [templateId], references: [id])
+  templateId     String
+  coordinator    User         @relation("GroupTaskCoordinator", fields: [coordinatorId], references: [id])
+  coordinatorId  String
+  academicYear   String
+  status         TaskStatus   @default(PENDING)
+  plannedDate    DateTime?
+  executedDate   DateTime?
+  description    String       @default("")
+  attendeesCount Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([institutionId, templateId, academicYear])
+  @@index([institutionId])
+  @@index([coordinatorId])
+}
+
+// Free-text follow-up log on a student's 360 card (יומן מעקב) — what the
+// coordinator writes after a call, visit, or check-in.
+model StudentNote {
+  id         String   @id @default(cuid())
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  author     User?    @relation(fields: [authorId], references: [id])
+  authorId   String?
+  authorName String
+  note       String
+  createdAt  DateTime @default(now())
+
+  @@index([studentId])
+}
+
+enum MomentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// "רגע של מעבר" — a short success-story write-up a coordinator submits;
+// once approved by a manager it earns the coordinator one credit, shown on
+// the home page leaderboard.
+model MomentOfTransition {
+  id            String       @id @default(cuid())
+  coordinator   User         @relation(fields: [coordinatorId], references: [id])
+  coordinatorId String
+  storyText     String
+  status        MomentStatus @default(PENDING)
+  approvedBy    User?        @relation("MomentApprover", fields: [approvedById], references: [id])
+  approvedById  String?
+  academicYear  String
+  createdAt     DateTime     @default(now())
+
+  @@index([coordinatorId])
+  @@index([academicYear])
+}
+
+// Posted by an admin/manager to the home page "פינת ההודעות" board —
+// birthdays, holidays, general notices.
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  body        String    @default("")
+  imageUrl    String?
+  fileUrl     String?
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+}
