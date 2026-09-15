@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ROLE_LABELS } from "@/lib/format";
+import MaavarimLogo from "@/components/MaavarimLogo";
 
 type NavItem = { href: string; label: string };
 
@@ -38,25 +39,16 @@ export default function TopNav({
 
   return (
     <header className="bg-brand-700 text-white sticky top-0 z-20 shadow-md">
-      <div className="max-w-[1400px] mx-auto px-4 flex items-center h-16 gap-6">
-        <Link href="/home" className="flex items-center gap-2 shrink-0">
-          <span className="h-9 w-9 rounded-full bg-white text-brand-700 font-heebo font-extrabold flex items-center justify-center">
-            מ
-          </span>
-          <span className="font-heebo font-extrabold text-lg hidden sm:inline">מעברים.נט</span>
+      <div className="max-w-[1400px] mx-auto px-4 flex items-center h-[72px] gap-4">
+        <Link href="/home" className="flex items-center shrink-0 text-2xl">
+          <MaavarimLogo light />
         </Link>
 
-        <nav className="flex items-center gap-1 overflow-x-auto flex-1 no-scrollbar">
+        <nav className="flex items-center gap-2 overflow-x-auto flex-1 no-scrollbar py-2">
           {items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`whitespace-nowrap px-3 py-2 rounded-lg text-sm font-medium transition ${
-                  active ? "bg-white/15 text-white" : "text-white/75 hover:text-white hover:bg-white/10"
-                }`}
-              >
+              <Link key={item.href} href={item.href} className={`pill-nav-btn ${active ? "active" : ""}`}>
                 {item.label}
               </Link>
             );
@@ -70,7 +62,7 @@ export default function TopNav({
           </div>
           <button
             onClick={handleLogout}
-            className="text-sm px-3 py-1.5 rounded-lg border border-white/25 hover:bg-white/10 transition"
+            className="text-sm px-3 py-1.5 rounded-full border border-white/25 hover:bg-white/10 transition"
           >
             התנתקות
           </button>

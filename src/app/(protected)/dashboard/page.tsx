@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { isManager } from "@/lib/permissions";
 import KpiCard from "@/components/KpiCard";
 import RiskPieChart from "@/components/RiskPieChart";
+import InteractionBarChart from "@/components/InteractionBarChart";
 import { RISK_ORDER } from "@/lib/format";
 
 const ACADEMIC_YEAR = 'תשפ"ו';
@@ -83,16 +84,16 @@ export default async function DashboardPage() {
 
         <div className="lg:col-span-2 card p-4">
           <h2 className="text-base font-semibold text-slate-700 mb-3">
-            {manager ? "סך תלמידים ומדד אינטראקציות לכל רכז" : "הנתונים שלי"}
+            {manager ? "מדד אינטראקציות לכל רכז" : "הנתונים שלי"}
           </h2>
-          <div className="overflow-x-auto">
+          <InteractionBarChart data={rows.map((r) => ({ name: r.name, value: r.interactionIndex }))} />
+          <div className="overflow-x-auto mt-2">
             <table className="w-full text-sm">
               <thead className="text-slate-500 text-xs border-b border-slate-100">
                 <tr>
                   <th className="text-right py-2 font-medium">רכז</th>
                   <th className="text-right py-2 font-medium">משתתפים</th>
                   <th className="text-right py-2 font-medium">בוגרים</th>
-                  <th className="text-right py-2 font-medium">מדד אינטראקציות (30 יום)</th>
                 </tr>
               </thead>
               <tbody>
@@ -101,7 +102,6 @@ export default async function DashboardPage() {
                     <td className="py-2 font-medium text-slate-700">{r.name}</td>
                     <td className="py-2 text-slate-600">{r.participants}</td>
                     <td className="py-2 text-slate-600">{r.alumni}</td>
-                    <td className="py-2 text-slate-600">{r.interactionIndex}</td>
                   </tr>
                 ))}
               </tbody>

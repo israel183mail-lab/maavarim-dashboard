@@ -63,22 +63,40 @@ h2 {
 }
 .input:focus {
   outline: none;
-  border-color: #0d9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+  border-color: #f7901e;
+  box-shadow: 0 0 0 3px rgba(247, 144, 30, 0.15);
 }
 
 .btn-primary {
-  border-radius: 0.5rem;
-  background-color: #0d9488;
+  border-radius: 999px;
+  background-color: #f7901e;
   color: #fff;
-  padding: 0.625rem 1rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: background-color 0.15s;
 }
 .btn-primary:hover {
-  background-color: #0f766e;
+  background-color: #e07800;
 }
 .btn-primary:disabled {
   opacity: 0.6;
+}
+
+.pill-nav-btn {
+  border-radius: 999px;
+  background-color: #fdf9f2;
+  color: #1d2445;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+.pill-nav-btn:hover {
+  background-color: #fff;
+}
+.pill-nav-btn.active {
+  background-color: #ff3131;
+  color: #fff;
 }

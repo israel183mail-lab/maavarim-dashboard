@@ -62,9 +62,9 @@ export default async function MyAreaPage({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="-m-4 sm:-m-6 p-4 sm:p-6 rounded-b-3xl bg-gradient-to-br from-brand-500 via-brand-700 to-brand-900 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl text-slate-800">
+        <h1 className="text-2xl text-white font-heebo font-extrabold">
           אזור אישי {manager && coordinator ? `— ${coordinator.name}` : ""}
         </h1>
         {manager && (
@@ -87,7 +87,7 @@ export default async function MyAreaPage({
           <RiskPieChart data={riskCounts} />
         </div>
         <div className="lg:col-span-3 space-y-3">
-          <h2 className="text-lg text-slate-800">ציר הקבוצה</h2>
+          <h2 className="text-lg text-white font-semibold">ציר הקבוצה</h2>
           {[...byInstitution.entries()].map(([id, data]) => {
             const done = data.tasks.filter((t) => t.status === "COMPLETED").length;
             const pct = data.tasks.length ? Math.round((done / data.tasks.length) * 100) : 0;
@@ -113,7 +113,7 @@ export default async function MyAreaPage({
       </div>
 
       <div>
-        <h2 className="text-lg text-slate-800 mb-3">ציר הפרט</h2>
+        <h2 className="text-lg text-white font-semibold mb-3">ציר הפרט</h2>
         <StudentDataGrid coordinatorId={targetCoordinatorId} />
       </div>
     </div>

@@ -46,13 +46,6 @@ export const RISK_DOT_COLOR: Record<string, string> = {
   CRITICAL: "bg-risk-critical",
 };
 
-export const RISK_BADGE_COLOR: Record<string, string> = {
-  NORMAL: "bg-[#21B524]/10 text-[#178018] border border-[#21B524]/30",
-  IN_REVIEW: "bg-[#F5C518]/15 text-[#8a6d00] border border-[#F5C518]/40",
-  ELEVATED: "bg-[#F7901E]/10 text-[#b35e00] border border-[#F7901E]/30",
-  CRITICAL: "bg-[#FF3131]/10 text-[#c40000] border border-[#FF3131]/30",
-};
-
 export const STUDENT_STATUS_LABELS: Record<string, string> = {
   ACTIVE: "פעיל",
   INACTIVE: "לא פעיל",
